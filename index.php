@@ -22,7 +22,7 @@
         <div class="glass-panel login-box fade-in" style="max-width: 600px;">
             <div class="logo-area" style="margin-bottom: 40px;">
                 <i class="fa-solid fa-graduation-cap logo-large"></i>
-                <h1 style="font-size: 3rem; line-height: 1; margin-bottom: 10px;">Unicali Segura<span
+                <h1 style="font-size: 3rem; line-height: 1; margin-bottom: 10px;">Unicali<span
                         class="text-gradient">Segura</span></h1>
                 <p class="text-muted">La evolución de la gestión académica universitaria.</p>
             </div>
