@@ -1,0 +1,4 @@
+secure/config.php
+secure/.htaccess
+secure/mail.php
+logs/
