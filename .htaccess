@@ -14,3 +14,12 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
   Header set Content-Security-Policy "default-src 'self' data:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' data: https://cdnjs.cloudflare.com; frame-ancestors 'self'; upgrade-insecure-requests; block-all-mixed-content;"
 </IfModule>
+
+# Evitar exposición de archivos sensibles / de prueba
+Options -Indexes
+<FilesMatch "(?i)^(test_|debug_|probador_completo|temp_diag|fix_db).+\.php$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "(?i)\.(sql|zip|rar|7z|bak)$">
+  Require all denied
+</FilesMatch>
