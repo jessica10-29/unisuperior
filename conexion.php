@@ -79,10 +79,26 @@ $conn = @new mysqli($host, $user, $pass, $db);
 if ($conn->connect_errno) {
     error_log("Error de conexion a BD ({$host}): " . $conn->connect_error);
     http_response_code(503);
+    // Respuesta limpia y sin "pantallazo rojo"
     $mensaje = $isLocal
-        ? 'Error de conexion a la base de datos: ' . $conn->connect_error
-        : 'Estamos realizando ajustes tecnicos. Intenta nuevamente en unos minutos.';
-    exit($mensaje);
+        ? 'No se pudo conectar a la base de datos local. Verifica MySQL, usuario, contraseña y nombre de BD.'
+        : 'Estamos realizando ajustes técnicos. Intenta nuevamente en unos minutos.';
+
+    echo '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">';
+    echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+    echo '<title>Servicio temporalmente no disponible</title>';
+    echo '<style>body{font-family:Arial,sans-serif; background:#0f172a; color:#e2e8f0; display:flex; align-items:center; justify-content:center; height:100vh; margin:0;}';
+    echo '.card{background:#111827; padding:28px 32px; border-radius:14px; box-shadow:0 18px 50px rgba(0,0,0,.35); max-width:420px; text-align:center;}';
+    echo '.card h1{font-size:1.25rem; margin-bottom:10px;} .card p{margin:8px 0 0; color:#cbd5e1; line-height:1.5;}';
+    echo '.card small{display:block; margin-top:12px; color:#94a3b8;}</style></head><body>';
+    echo '<div class="card">';
+    echo '<h1>Servicio temporalmente no disponible</h1>';
+    echo '<p>' . htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') . '</p>';
+    if ($isLocal) {
+        echo '<small>Hint: Arranca MySQL en XAMPP y confirma los datos en secure/config.php o variables DB_*_LOCAL.</small>';
+    }
+    echo '</div></body></html>';
+    exit;
 }
 
 $conn->set_charset('utf8mb4');
