@@ -74,9 +74,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         } catch (Exception $e) {
             // Fallback para entorno local: registrar el correo en logs y simular éxito
             $host = $_SERVER['HTTP_HOST'] ?? '';
-            $isLocal = stripos($host, 'localhost') !== false
+            $forceProd = getenv('SMTP_FORCE_PROD');
+            $isLocal = !$forceProd && (
+                stripos($host, 'localhost') !== false
                 || stripos($host, '127.0.0.1') !== false
-                || getenv('APP_ENV') === 'local';
+                || getenv('APP_ENV') === 'local'
+            );
 
             if ($isLocal) {
                 $logPath = __DIR__ . '/logs/mail-local.log';
