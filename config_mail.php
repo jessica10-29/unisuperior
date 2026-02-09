@@ -14,6 +14,10 @@ if (!file_exists($smtpConfigPath)) {
     die('Falta secure/mail.php con las credenciales SMTP.');
 }
 $smtp = require $smtpConfigPath;
+// Ajustamos timeout de sockets al valor configurado para evitar esperas eternas en conexiones bloqueadas.
+if (isset($smtp['TIMEOUT'])) {
+    ini_set('default_socket_timeout', (string) $smtp['TIMEOUT']);
+}
 
 /**
  * Crea y configura una instancia de PHPMailer
