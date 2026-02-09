@@ -1,5 +1,7 @@
 <?php
 require_once 'conexion.php';
+// Forzamos UTF-8 en la respuesta para evitar textos mal codificados en algunos navegadores
+header('Content-Type: text/html; charset=UTF-8');
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -78,7 +80,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
         }
     } else {
-        $error_envio = "El correo '$email' no está registrado.";
+        $safeSearch = htmlspecialchars($search, ENT_QUOTES, "UTF-8");
+        $error_envio = "El correo o identificación '$safeSearch' no está registrado.";
     }
 }
 ?>
