@@ -72,6 +72,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             header("Location: recover_password.php?ok=1");
             exit;
         } catch (Exception $e) {
+            // Fallback para entorno local: registrar el correo en logs y simular éxito
+            $host = $_SERVER['HTTP_HOST'] ?? '';
+            $isLocal = stripos($host, 'localhost') !== false
+                || stripos($host, '127.0.0.1') !== false
+                || getenv('APP_ENV') === 'local';
+
+            if ($isLocal) {
+                $logPath = __DIR__ . '/logs/mail-local.log';
+                $payload = "---- " . date('Y-m-d H:i:s') . " ----\n"
+                    . "TO: {$email}\nSUBJECT: Recuperación de contraseña\nLINK: {$link}\n\n"
+                    . "HTML:\n" . strip_tags($mail->Body) . "\n\n";
+                file_put_contents($logPath, $payload, FILE_APPEND | LOCK_EX);
+                header("Location: recover_password.php?ok=1&simulado=1");
+                exit;
+            }
+
             $error_info = $mail->ErrorInfo;
             if (strpos($error_info, 'authenticate') !== false) {
                 $error_envio = "<b>Error de Autenticación:</b> Google rechazó la clave. <br>1. Revisa que tu 'Contraseña de aplicación' sea correcta. <br>2. Confirma en tu Gmail el aviso de 'Inicio de sesión bloqueado'.";
