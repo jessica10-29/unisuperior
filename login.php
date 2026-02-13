@@ -85,7 +85,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - Unicali Segura</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="icon" type="image/png" href="favicon.png?v=3">
     <link rel="shortcut icon" href="favicon.ico?v=3">
@@ -129,7 +129,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <div class="input-wrapper">
                         <input type="password" name="password" id="password" class="input-field" placeholder="••••••••"
                             required autocomplete="current-password">
-                        <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                        <button type="button" class="password-toggle" data-target="password">
                             <i class="fa-solid fa-eye"></i>
                         </button>
                     </div>
@@ -146,22 +146,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 </div>
 
 
-
-                <script>
-                    function togglePassword(inputId, btn) {
-                        const input = document.getElementById(inputId);
-                        const icon = btn.querySelector('i');
-                        if (input.type === 'password') {
-                            input.type = 'text';
-                            icon.classList.remove('fa-eye');
-                            icon.classList.add('fa-eye-slash');
-                        } else {
-                            input.type = 'password';
-                            icon.classList.remove('fa-eye-slash');
-                            icon.classList.add('fa-eye');
-                        }
-                    }
-                </script>
 
                 <div style="text-align: right; margin-bottom: 25px;">
                     <a href="recover_password.php"
@@ -187,6 +171,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </div>
         </div>
     </div>
+    <script src="js/login.js" defer></script>
 </body>
 
 </html>
