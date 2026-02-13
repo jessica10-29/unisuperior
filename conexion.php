@@ -6,7 +6,8 @@ if (!headers_sent()) {
     header('Content-Type: text/html; charset=UTF-8');
 }
 
-$isLocal = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost', '127.0.0.1', '::1']) || php_sapi_name() === 'cli';
+$isLocal = in_array($_SERVER['HTTP_HOST'] ?? '', ['<localhost:3306 >
+', '127.0.0.1', '::1']) || php_sapi_name() === 'cli';
 $httpsActivo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
     (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
 $forzarHttps = getenv('FORCE_HTTPS') === '1';
