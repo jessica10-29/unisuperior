@@ -4,6 +4,33 @@ require_once 'conexion.php';
 
 $error = '';
 
+// Cabeceras adicionales orientadas al navegador para esta página
+if (!headers_sent()) {
+    header_remove('X-Powered-By');
+
+    $csp = "default-src 'self'; "
+        . "script-src 'self'; "
+        . "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; "
+        . "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:; "
+        . "img-src 'self' data:; "
+        . "connect-src 'self'; "
+        . "object-src 'none'; "
+        . "frame-ancestors 'self'; "
+        . "form-action 'self'; "
+        . "base-uri 'self'";
+
+    // Solo forzar HTTPS en subrecursos cuando esté activo o forzado en el servidor
+    if (!empty($httpsActivo)) {
+        $csp .= "; upgrade-insecure-requests";
+    }
+
+    header("Content-Security-Policy: {$csp}");
+    header('Cross-Origin-Opener-Policy: same-origin');
+    header('Cross-Origin-Resource-Policy: same-origin');
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // 🛡️ Verificar CSRF
