@@ -139,6 +139,12 @@ $estudiantes = $conn->query("
                     <p class="text-muted" style="font-size: 0.8rem;">Calificar cortes y parciales</p>
                 </a>
 
+                <a href="gestion_notas.php#inscribir" class="card glass-panel" style="text-decoration: none; color: inherit; text-align: center;">
+                    <i class="fa-solid fa-user-plus" style="font-size: 2.5rem; color: #22c55e; margin-bottom: 15px;"></i>
+                    <h4>Inscribir Estudiantes</h4>
+                    <p class="text-muted" style="font-size: 0.8rem;">Asigna alumnos a tus materias</p>
+                </a>
+
                 <a href="crear_materia.php" class="card glass-panel" style="text-decoration: none; color: inherit; text-align: center;">
                     <i class="fa-solid fa-plus-circle" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 15px;"></i>
                     <h4>Nueva Materia</h4>
