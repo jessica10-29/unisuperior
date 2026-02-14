@@ -73,6 +73,11 @@ $pendientes = $conn->query("
 $pendientes_total = ($pendientes && $rowp = $pendientes->fetch_assoc()) ? (int)$rowp['total'] : 0;
 
 $materias = $conn->query("SELECT * FROM materias WHERE profesor_id = $profesor_id");
+$materias_list = [];
+while ($m = $materias->fetch_assoc()) {
+    $materias_list[] = $m;
+}
+$highlight_student = isset($_GET['student']) ? limpiar_dato($_GET['student']) : '';
 
 // Verificar si hay estudiantes en el sistema para diagnóstico
 $hay_estudiantes = (count($lista_est) > 0);
@@ -140,8 +145,10 @@ if (!$hay_estudiantes && empty($mensaje)) {
 
             <?php echo $mensaje; ?>
 
+            <div id="inscribir"></div>
+
             <div style="display: grid; gap: 20px;">
-                <?php while ($m = $materias->fetch_assoc()):
+                <?php foreach ($materias_list as $m):
                     $mid = $m['id'];
                     $q_c = $conn->query("SELECT COUNT(*) as c FROM matriculas WHERE materia_id = $mid AND periodo_id = $periodo_global_id");
                     $count = ($q_c && $row_c = $q_c->fetch_assoc()) ? $row_c['c'] : 0;
@@ -321,6 +328,22 @@ if (!$hay_estudiantes && empty($mensaje)) {
                 } else {
                     items[i].style.display = "none";
                 }
+            }
+        }
+
+        // Auto-filtro si llega ?student= en la URL
+        const highlightStudent = "<?php echo addslashes($highlight_student); ?>";
+        const mids = [<?php echo implode(',', array_column($materias_list, 'id')); ?>];
+        if (highlightStudent) {
+            mids.forEach(mid => {
+                const input = document.getElementById('search-' + mid);
+                if (input) {
+                    input.value = highlightStudent;
+                    filterStudents(mid);
+                }
+            });
+            if (location.hash !== '#inscribir') {
+                location.hash = '#inscribir';
             }
         }
     </script>
