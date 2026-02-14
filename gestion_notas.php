@@ -60,6 +60,17 @@ $lista_est = [];
 while ($e = $estudiantes_all->fetch_assoc()) {
     $lista_est[] = $e;
 }
+$pendientes = $conn->query("
+    SELECT COUNT(*) as total FROM usuarios u
+    WHERE u.rol = 'estudiante'
+      AND u.id NOT IN (
+          SELECT DISTINCT m.estudiante_id
+          FROM matriculas m
+          JOIN materias mat ON m.materia_id = mat.id
+          WHERE mat.profesor_id = $profesor_id
+      )
+");
+$pendientes_total = ($pendientes && $rowp = $pendientes->fetch_assoc()) ? (int)$rowp['total'] : 0;
 
 $materias = $conn->query("SELECT * FROM materias WHERE profesor_id = $profesor_id");
 

@@ -17,6 +17,20 @@ $sql_alumnos = "SELECT COUNT(DISTINCT estudiante_id) as total
 $res_alumnos = $conn->query($sql_alumnos);
 $total_alumnos = ($res_alumnos) ? $res_alumnos->fetch_assoc()['total'] : 0;
 
+$estudiantes_pendientes = $conn->query("
+    SELECT u.id, u.nombre, u.email, u.programa_academico, u.semestre, u.foto, u.created_at
+    FROM usuarios u
+    WHERE u.rol = 'estudiante'
+      AND u.id NOT IN (
+        SELECT DISTINCT m.estudiante_id
+        FROM matriculas m
+        JOIN materias mat ON m.materia_id = mat.id
+        WHERE mat.profesor_id = $profesor_id
+      )
+    ORDER BY u.created_at DESC
+    LIMIT 10
+");
+
 $estudiantes = $conn->query("
     SELECT u.id, u.nombre, u.email, u.programa_academico, u.semestre, u.foto,
            COUNT(DISTINCT m.materia_id) AS cursos,
@@ -136,6 +150,37 @@ $estudiantes = $conn->query("
                     <h4>Certificado</h4>
                     <p class="text-muted" style="font-size: 0.8rem;">Descargar documento oficial</p>
                 </a>
+            </div>
+
+            <!-- Estudiantes registrados sin inscribir en tus materias -->
+            <div style="margin-top: 30px;">
+                <h2 style="margin-bottom: 12px;">Estudiantes recién registrados (sin asignar)</h2>
+                <?php if ($estudiantes_pendientes && $estudiantes_pendientes->num_rows > 0): ?>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+                        <?php while ($p = $estudiantes_pendientes->fetch_assoc()):
+                            $foto_p = obtener_foto_usuario($p['foto']);
+                        ?>
+                            <div class="card glass-panel" style="display:flex; gap:10px; align-items:center; padding:12px;">
+                                <img src="<?php echo htmlspecialchars($foto_p); ?>" alt="avatar" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.08);">
+                                <div style="flex:1;">
+                                    <div style="font-weight:700;"><?php echo htmlspecialchars($p['nombre']); ?></div>
+                                    <div class="text-muted" style="font-size:0.82rem;"><?php echo htmlspecialchars($p['email']); ?></div>
+                                    <div style="display:flex; gap:6px; flex-wrap:wrap; font-size:0.75rem; margin-top:4px;">
+                                        <?php if (!empty($p['programa_academico'])): ?>
+                                            <span class="badge" style="background: rgba(99,102,241,0.12); color: var(--primary); border:1px solid rgba(99,102,241,0.18); padding:2px 6px; border-radius:6px;"><?php echo htmlspecialchars($p['programa_academico']); ?></span>
+                                        <?php endif; ?>
+                                        <?php if (!empty($p['semestre'])): ?>
+                                            <span class="badge" style="background: rgba(16,185,129,0.12); color: #22c55e; border:1px solid rgba(16,185,129,0.18); padding:2px 6px; border-radius:6px;">Sem <?php echo htmlspecialchars($p['semestre']); ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <a href="gestion_notas.php" class="btn btn-outline" style="font-size:0.78rem; padding:6px 10px;">Inscribir</a>
+                            </div>
+                        <?php endwhile; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="card glass-panel" style="padding: 12px;">No hay estudiantes nuevos pendientes de asignar.</div>
+                <?php endif; ?>
             </div>
 
             <div style="margin-top: 35px;">
