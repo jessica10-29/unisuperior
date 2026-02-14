@@ -280,7 +280,7 @@ if (!$hay_estudiantes && empty($mensaje)) {
                             <button type="button" onclick="mostrarAsignar(<?php echo $mid; ?>)" class="btn btn-outline" style="width: 100%; margin-top: 20px;">Cerrar Panel de Gestión</button>
                         </div>
                     </div>
-                <?php endwhile; ?>
+                <?php endforeach; ?>
             </div>
         </main>
     </div>

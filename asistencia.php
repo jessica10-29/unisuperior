@@ -3,6 +3,8 @@ require_once 'conexion.php';
 verificar_sesion();
 verificar_rol('profesor');
 
+$highlight_student = isset($_GET['student']) ? limpiar_dato($_GET['student']) : '';
+
 $profesor_id = $_SESSION['usuario_id'];
 $mensaje = '';
 
@@ -93,6 +95,12 @@ $materias = $conn->query("SELECT * FROM materias WHERE profesor_id = $profesor_i
             <header style="margin-bottom: 30px;">
                 <h1 class="text-gradient">Control de Asistencia</h1>
                 <p class="text-muted">Selecciona una materia para registrar la asistencia del día</p>
+                <div style="margin-top:12px; max-width: 420px;">
+                    <label class="text-muted" style="font-size:0.85rem;">Filtrar estudiante</label>
+                    <div class="input-group">
+                        <input type="text" id="search-global" class="input-field" placeholder="Nombre o cédula" value="<?php echo htmlspecialchars($highlight_student); ?>" oninput="globalFilter()">
+                    </div>
+                </div>
             </header>
 
             <?php echo $mensaje; ?>
@@ -158,7 +166,7 @@ $materias = $conn->query("SELECT * FROM materias WHERE profesor_id = $profesor_i
                                                         $stat = ($q_stat && $row_stat = $q_stat->fetch_assoc()) ? $row_stat : ['total' => 0, 'asistio' => 0];
                                                         $porcentaje = ($stat['total'] > 0) ? round(($stat['asistio'] / $stat['total']) * 100) : 100;
                                                     ?>
-                                                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                                        <tr class="attendance-row" data-name="<?php echo strtoupper($a['nombre'] . ' ' . $est_id_loop); ?>" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                                             <td style="padding: 12px 5px; font-size: 0.9rem;">
                                                                 <?php echo htmlspecialchars($a['nombre']); ?>
                                                             </td>
@@ -218,6 +226,21 @@ $materias = $conn->query("SELECT * FROM materias WHERE profesor_id = $profesor_i
 
         btn.onclick = toggleMenu;
         overlay.onclick = toggleMenu;
+
+        // Filtro global por estudiante
+        function globalFilter() {
+            var term = document.getElementById('search-global').value.toUpperCase();
+            var rows = document.getElementsByClassName('attendance-row');
+            for (var i = 0; i < rows.length; i++) {
+                var name = rows[i].getAttribute('data-name') || '';
+                rows[i].style.display = name.indexOf(term) > -1 ? '' : 'none';
+            }
+        }
+
+        // Si llegó ?student= autofiltra
+        <?php if (!empty($highlight_student)): ?>
+        globalFilter();
+        <?php endif; ?>
 
         function toggleAsistencia(id) {
             var el = document.getElementById('asistencia-box-' + id);

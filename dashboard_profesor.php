@@ -238,7 +238,7 @@ $estudiantes = $conn->query("
                                         <a href="gestion_notas.php?student=<?php echo urlencode($e['nombre']); ?>" class="btn btn-outline" style="font-size:0.78rem; padding:8px 12px; border-color: rgba(99,102,241,0.35); color: var(--primary);">
                                             <i class="fa-solid fa-pen-to-square"></i> Calificar
                                         </a>
-                                        <a href="asistencia.php" class="btn btn-outline" style="font-size:0.78rem; padding:8px 12px; border-color: rgba(16,185,129,0.35); color: #10b981;">
+                                        <a href="asistencia.php?student=<?php echo urlencode($e['nombre']); ?>" class="btn btn-outline" style="font-size:0.78rem; padding:8px 12px; border-color: rgba(16,185,129,0.35); color: #10b981;">
                                             <i class="fa-solid fa-clipboard-user"></i> Asistencia
                                         </a>
                                     </div>
