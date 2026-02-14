@@ -166,7 +166,7 @@ if ($rol == 'profesor' && (empty($u['codigo_profesor']) || $u['codigo_profesor']
                         <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;"><?php echo $rol; ?></span>
                     </div>
 
-                    <form method="POST">
+                    <form method="POST" enctype="multipart/form-data">
                         <div class="responsive-layout-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             <div class="input-group">
                                 <label class="input-label">Nombre Completo</label>
@@ -176,6 +176,12 @@ if ($rol == 'profesor' && (empty($u['codigo_profesor']) || $u['codigo_profesor']
                                 <label class="input-label">Email de Login</label>
                                 <input type="email" value="<?php echo htmlspecialchars($u['email']); ?>" class="input-field" disabled style="opacity: 0.6; cursor: not-allowed;">
                             </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Actualizar foto de perfil</label>
+                            <input type="file" name="foto" accept="image/*" class="input-field" style="padding: 10px;">
+                            <small class="text-muted">JPG/PNG/WEBP • Máx 2MB</small>
                         </div>
 
                         <div class="responsive-layout-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
