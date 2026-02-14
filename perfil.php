@@ -4,6 +4,13 @@ verificar_sesion();
 $id = $_SESSION['usuario_id'];
 $rol = $_SESSION['rol'];
 $mensaje = '';
+$u = $conn->query("SELECT * FROM usuarios WHERE id = $id")->fetch_assoc();
+
+// Self-healing: columna de código profesor si falta
+$col_prof = $conn->query("SHOW COLUMNS FROM usuarios LIKE 'codigo_profesor'");
+if ($col_prof && $col_prof->num_rows === 0) {
+    $conn->query("ALTER TABLE usuarios ADD COLUMN codigo_profesor VARCHAR(50) DEFAULT NULL AFTER codigo_estudiantil");
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $identificacion = limpiar_dato($_POST['identificacion']);
@@ -14,13 +21,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $correo_inst = limpiar_dato($_POST['correo_institucional']);
     $programa = limpiar_dato($_POST['programa_academico']);
     $semestre = limpiar_dato($_POST['semestre']);
-    $codigo_est = limpiar_dato($_POST['codigo_estudiantil']);
+    $codigo_est = ($rol == 'estudiante') ? limpiar_dato($_POST['codigo_estudiantil']) : ($u['codigo_estudiantil'] ?? '');
+    $fotoNombre = $u['foto'] ?? 'default_avatar.png';
+
+    // Foto de perfil (opcional)
+    if (isset($_FILES['foto']) && !empty($_FILES['foto']['name'])) {
+        $permitidas = ['jpg', 'jpeg', 'png', 'webp'];
+        $ext = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
+        $peso_ok = $_FILES['foto']['size'] <= 2 * 1024 * 1024; // 2MB
+
+        if (in_array($ext, $permitidas) && $peso_ok) {
+            $destino = __DIR__ . '/uploads/fotos';
+            if (!is_dir($destino)) {
+                mkdir($destino, 0755, true);
+            }
+            $fotoNombre = uniqid('u_', true) . '.' . $ext;
+            move_uploaded_file($_FILES['foto']['tmp_name'], $destino . '/' . $fotoNombre);
+        } else {
+            $mensaje = '<div style="background: rgba(244, 63, 94, 0.1); color: #fb7185; padding: 12px; border-radius: 10px; margin-bottom: 25px; font-size: 0.85rem; border: 1px solid rgba(244, 63, 114, 0.2);"><i class="fa-solid fa-circle-exclamation"></i> Imagen no válida (solo JPG/PNG/WEBP, máx 2MB).</div>';
+        }
+    }
 
     $nuevo_pass = $_POST['password'];
 
     // Update basic info
-    $stmt = $conn->prepare("UPDATE usuarios SET identificacion = ?, telefono = ?, direccion = ?, ciudad = ?, departamento = ?, correo_institucional = ?, programa_academico = ?, semestre = ?, codigo_estudiantil = ? WHERE id = ?");
-    $stmt->bind_param("sssssssssi", $identificacion, $telefono, $direccion, $ciudad, $departamento, $correo_inst, $programa, $semestre, $codigo_est, $id);
+    $stmt = $conn->prepare("UPDATE usuarios SET identificacion = ?, telefono = ?, direccion = ?, ciudad = ?, departamento = ?, correo_institucional = ?, programa_academico = ?, semestre = ?, codigo_estudiantil = ?, foto = ? WHERE id = ?");
+    $stmt->bind_param("ssssssssssi", $identificacion, $telefono, $direccion, $ciudad, $departamento, $correo_inst, $programa, $semestre, $codigo_est, $fotoNombre, $id);
 
     if ($stmt->execute()) {
         $mensaje = '<div style="background: rgba(16, 185, 129, 0.1); color: #34d399; padding: 12px; border-radius: 10px; margin-bottom: 25px; font-size: 0.85rem; border: 1px solid rgba(16, 185, 129, 0.2);"><i class="fa-solid fa-circle-check"></i> Perfil actualizado correctamente.</div>';
@@ -43,9 +69,16 @@ $u = $conn->query("SELECT * FROM usuarios WHERE id = $id")->fetch_assoc();
 // Generación automática si no tiene código (para usuarios antiguos)
 if ($rol == 'estudiante' && (empty($u['codigo_estudiantil']) || $u['codigo_estudiantil'] == 'N/A')) {
     $current_year = date('Y');
-    $nuevo_codigo = "UC-" . $current_year . "-" . str_pad($id, 4, "0", STR_PAD_LEFT);
+    $nuevo_codigo = "EST-" . $current_year . "-" . str_pad($id, 4, "0", STR_PAD_LEFT);
     $conn->query("UPDATE usuarios SET codigo_estudiantil = '$nuevo_codigo' WHERE id = $id");
     $u['codigo_estudiantil'] = $nuevo_codigo;
+}
+
+if ($rol == 'profesor' && (empty($u['codigo_profesor']) || $u['codigo_profesor'] == 'N/A')) {
+    $current_year = date('Y');
+    $nuevo_codigo = "PROF-" . $current_year . "-" . str_pad($id, 4, "0", STR_PAD_LEFT);
+    $conn->query("UPDATE usuarios SET codigo_profesor = '$nuevo_codigo' WHERE id = $id");
+    $u['codigo_profesor'] = $nuevo_codigo;
 }
 ?>
 <!DOCTYPE html>
@@ -127,9 +160,8 @@ if ($rol == 'estudiante' && (empty($u['codigo_estudiantil']) || $u['codigo_estud
 
                 <div class="card glass-panel fade-in">
                     <div style="text-align: center; margin-bottom: 30px;">
-                        <div style="width: 100px; height: 100px; background: rgba(99, 102, 241, 0.1); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--primary);">
-                            <i class="fa-solid fa-user-astronaut" style="font-size: 3rem; color: var(--primary);"></i>
-                        </div>
+                        <?php $foto_url = obtener_foto_usuario($u['foto']); ?>
+                        <img src="<?php echo htmlspecialchars($foto_url); ?>" alt="avatar" style="width: 110px; height: 110px; object-fit: cover; border-radius: 999px; border: 3px solid var(--primary); margin-bottom: 12px; background: rgba(99,102,241,0.1);">
                         <h2 style="margin-bottom: 5px;"><?php echo htmlspecialchars($u['nombre']); ?></h2>
                         <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;"><?php echo $rol; ?></span>
                     </div>
