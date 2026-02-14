@@ -18,6 +18,17 @@ $sql_alumnos = "SELECT COUNT(DISTINCT estudiante_id) as total
                 WHERE mat.profesor_id = $profesor_id";
 $res_alumnos = $conn->query($sql_alumnos);
 $total_alumnos = ($res_alumnos) ? $res_alumnos->fetch_assoc()['total'] : 0;
+$estudiantes = $conn->query("
+    SELECT u.id, u.nombre, u.email, u.programa_academico, u.semestre, u.foto,
+           COUNT(DISTINCT m.materia_id) AS cursos
+    FROM usuarios u
+    JOIN matriculas m ON u.id = m.estudiante_id
+    JOIN materias mat ON m.materia_id = mat.id
+    WHERE mat.profesor_id = $profesor_id
+    GROUP BY u.id, u.nombre, u.email, u.programa_academico, u.semestre, u.foto
+    ORDER BY u.nombre ASC
+    LIMIT 20
+");
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -126,6 +137,36 @@ $total_alumnos = ($res_alumnos) ? $res_alumnos->fetch_assoc()['total'] : 0;
                     <h4>Certificado</h4>
                     <p class="text-muted" style="font-size: 0.8rem;">Descargar documento oficial</p>
                 </a>
+            </div>
+
+            <!-- Estudiantes vinculados -->
+            <div style="margin-top: 35px;">
+                <h2 style="margin-bottom: 15px;">Mis estudiantes</h2>
+                <?php if ($estudiantes && $estudiantes->num_rows > 0): ?>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+                        <?php while ($e = $estudiantes->fetch_assoc()): ?>
+                            <?php $foto = obtener_foto_usuario($e['foto']); ?>
+                            <div class="card glass-panel fade-in" style="display: flex; gap: 12px; align-items: center; padding: 14px;">
+                                <img src="<?php echo htmlspecialchars($foto); ?>" alt="avatar" style="width: 56px; height: 56px; border-radius: 12px; object-fit: cover; border: 1px solid rgba(255,255,255,0.08);">
+                                <div style="flex:1;">
+                                    <div style="font-weight: 700;"><?php echo htmlspecialchars($e['nombre']); ?></div>
+                                    <div class="text-muted" style="font-size: 0.82rem;"><?php echo htmlspecialchars($e['email']); ?></div>
+                                    <div style="display:flex; gap:8px; flex-wrap: wrap; margin-top:6px; font-size: 0.78rem;">
+                                        <?php if (!empty($e['programa_academico'])): ?>
+                                            <span class="badge" style="background: rgba(99,102,241,0.12); color: var(--primary); border:1px solid rgba(99,102,241,0.25); padding:3px 8px; border-radius: 8px;"><?php echo htmlspecialchars($e['programa_academico']); ?></span>
+                                        <?php endif; ?>
+                                        <?php if (!empty($e['semestre'])): ?>
+                                            <span class="badge" style="background: rgba(16,185,129,0.12); color: #22c55e; border:1px solid rgba(16,185,129,0.25); padding:3px 8px; border-radius: 8px;">Sem <?php echo htmlspecialchars($e['semestre']); ?></span>
+                                        <?php endif; ?>
+                                        <span class="badge" style="background: rgba(251,191,36,0.12); color: #f59e0b; border:1px solid rgba(251,191,36,0.25); padding:3px 8px; border-radius: 8px;"><?php echo (int)$e['cursos']; ?> materias contigo</span>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endwhile; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="card glass-panel" style="padding: 18px;">Aún no tienes estudiantes inscritos en tus materias.</div>
+                <?php endif; ?>
             </div>
 
         </main>
