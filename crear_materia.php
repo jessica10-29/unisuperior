@@ -6,9 +6,30 @@ verificar_rol('profesor');
 $mensaje = '';
 $profesor_id = $_SESSION['usuario_id'];
 
+function generar_codigo_materia($conn, $prefijo = 'MAT')
+{
+    $intentos = 0;
+    do {
+        $intentos++;
+        $rand = strtoupper(substr(bin2hex(random_bytes(3)), 0, 4));
+        $codigo = $prefijo . '-' . date('y') . $rand;
+        $stmt = $conn->prepare("SELECT id FROM materias WHERE codigo = ?");
+        $stmt->bind_param("s", $codigo);
+        $stmt->execute();
+        $existe = $stmt->get_result()->num_rows > 0;
+        $stmt->close();
+    } while ($existe && $intentos < 10);
+    return $codigo;
+}
+
+$codigo_sugerido = generar_codigo_materia($conn);
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nombre = limpiar_dato($_POST['nombre']);
     $codigo = limpiar_dato($_POST['codigo']);
+    if (empty($codigo)) {
+        $codigo = generar_codigo_materia($conn);
+    }
     $descripcion = limpiar_dato($_POST['descripcion']);
 
     // Validar código único con seguridad
@@ -94,8 +115,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="input-group">
-                            <label class="input-label">Código</label>
-                            <input type="text" name="codigo" class="input-field" placeholder="MAT-101" required>
+                            <label class="input-label">Código (autogenerado, editable)</label>
+                            <input type="text" name="codigo" class="input-field" placeholder="MAT-101" value="<?php echo htmlspecialchars($codigo_sugerido); ?>">
+                            <small class="text-muted">Déjalo vacío para generar uno único.</small>
                         </div>
                     </div>
 

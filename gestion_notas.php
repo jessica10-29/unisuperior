@@ -55,7 +55,7 @@ $res_p_global = $conn->query("SELECT nombre FROM periodos WHERE id = $periodo_gl
 $p_global_act = ($res_p_global && $row_g = $res_p_global->fetch_assoc()) ? $row_g : ['nombre' => '2024-1'];
 
 // Obtener todos los estudiantes para el buscador (Trello)
-$estudiantes_all = $conn->query("SELECT id, nombre, email, identificacion FROM usuarios WHERE rol = 'estudiante' ORDER BY nombre ASC");
+$estudiantes_all = $conn->query("SELECT id, nombre, email, identificacion, foto FROM usuarios WHERE rol = 'estudiante' ORDER BY nombre ASC");
 $lista_est = [];
 while ($e = $estudiantes_all->fetch_assoc()) {
     $lista_est[] = $e;
@@ -172,6 +172,8 @@ if (!$hay_estudiantes && empty($mensaje)) {
                                                 <?php foreach ($lista_est as $est): ?>
                                                     <label class="student-item" style="padding: 10px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: background 0.2s;">
                                                         <input type="checkbox" name="estudiantes_seleccionados[]" value="<?php echo $est['id']; ?>" style="width: 18px; height: 18px; accent-color: var(--primary);">
+                                                        <?php $foto_sel = obtener_foto_usuario($est['foto']); ?>
+                                                        <img src="<?php echo htmlspecialchars($foto_sel); ?>" alt="avatar" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.08);">
                                                         <div style="flex: 1;">
                                                             <div style="font-size: 0.85rem; font-weight: 600; color: white;"><?php echo htmlspecialchars($est['nombre']); ?></div>
                                                             <div style="font-size: 0.7rem; opacity: 0.5;"><?php echo htmlspecialchars($est['identificacion'] ?: $est['email']); ?></div>
@@ -199,7 +201,7 @@ if (!$hay_estudiantes && empty($mensaje)) {
                                     <div style="max-height: 250px; overflow-y: auto;">
                                         <?php
                                         // FIX: Mostrar TODOS los inscritos independientemente del periodo para evitar "desapariciones"
-                                        $inscritos = $conn->query("SELECT m.id as mat_id, u.nombre, u.identificacion, m.periodo_id, p.nombre as nombre_periodo 
+                                        $inscritos = $conn->query("SELECT m.id as mat_id, u.nombre, u.identificacion, u.foto, m.periodo_id, p.nombre as nombre_periodo 
                                                                  FROM matriculas m 
                                                                  JOIN usuarios u ON m.estudiante_id = u.id 
                                                                  LEFT JOIN periodos p ON m.periodo_id = p.id
@@ -211,15 +213,19 @@ if (!$hay_estudiantes && empty($mensaje)) {
                                                 $es_periodo_incorrecto = ($ins['periodo_id'] != $periodo_global_id);
                                         ?>
                                                 <div style="padding: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); <?php echo $es_periodo_incorrecto ? 'background: rgba(245, 158, 11, 0.1); border-left: 3px solid #f59e0b;' : ''; ?>">
-                                                    <div>
-                                                        <div style="font-size: 0.85rem;"><?php echo htmlspecialchars($ins['nombre']); ?></div>
-                                                        <div style="font-size: 0.7rem; opacity: 0.4;">
-                                                            <?php echo $ins['identificacion']; ?>
-                                                            <?php if ($es_periodo_incorrecto): ?>
-                                                                <span style="color: #f59e0b; font-weight: bold; margin-left: 5px;">
-                                                                    <i class="fa-solid fa-triangle-exclamation"></i> En <?php echo $ins['nombre_periodo'] ?: 'Periodo ID: ' . $ins['periodo_id']; ?>
-                                                                </span>
-                                                            <?php endif; ?>
+                                                    <div style="display:flex; align-items:center; gap:10px;">
+                                                        <?php $foto_ins = obtener_foto_usuario($ins['foto']); ?>
+                                                        <img src="<?php echo htmlspecialchars($foto_ins); ?>" alt="avatar" style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.08);">
+                                                        <div>
+                                                            <div style="font-size: 0.85rem;"><?php echo htmlspecialchars($ins['nombre']); ?></div>
+                                                            <div style="font-size: 0.7rem; opacity: 0.4;">
+                                                                <?php echo $ins['identificacion']; ?>
+                                                                <?php if ($es_periodo_incorrecto): ?>
+                                                                    <span style="color: #f59e0b; font-weight: bold; margin-left: 5px;">
+                                                                        <i class="fa-solid fa-triangle-exclamation"></i> En <?php echo $ins['nombre_periodo'] ?: 'Periodo ID: ' . $ins['periodo_id']; ?>
+                                                                    </span>
+                                                                <?php endif; ?>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div style="display: flex; gap: 5px;">

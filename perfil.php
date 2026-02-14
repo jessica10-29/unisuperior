@@ -221,22 +221,30 @@ if ($rol == 'profesor' && (empty($u['codigo_profesor']) || $u['codigo_profesor']
                             <input type="text" name="programa_academico" value="<?php echo htmlspecialchars($u['programa_academico'] ?? ''); ?>" class="input-field" placeholder="No especificado">
                         </div>
 
-                        <div class="responsive-layout-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                            <div class="input-group">
-                                <label class="input-label">Semestre Actual</label>
-                                <select name="semestre" class="input-field" style="appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 0.65rem auto; padding-right: 2.5rem;">
-                                    <option value="">-- No especificado --</option>
-                                    <?php for ($i = 1; $i <= 10; $i++): ?>
-                                        <option value="<?php echo $i; ?>" <?php echo ($u['semestre'] == $i) ? 'selected' : ''; ?>>Semestre <?php echo $i; ?></option>
-                                    <?php endfor; ?>
-                                </select>
+                        <?php if ($rol == 'estudiante'): ?>
+                            <div class="responsive-layout-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div class="input-group">
+                                    <label class="input-label">Semestre Actual</label>
+                                    <select name="semestre" class="input-field" style="appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 0.65rem auto; padding-right: 2.5rem;">
+                                        <option value="">-- No especificado --</option>
+                                        <?php for ($i = 1; $i <= 10; $i++): ?>
+                                            <option value="<?php echo $i; ?>" <?php echo ($u['semestre'] == $i) ? 'selected' : ''; ?>>Semestre <?php echo $i; ?></option>
+                                        <?php endfor; ?>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">Código Estudiantil (Automático)</label>
+                                    <input type="text" name="codigo_estudiantil" value="<?php echo htmlspecialchars($u['codigo_estudiantil'] ?? 'Generándose...'); ?>" class="input-field" readonly style="background: rgba(0,0,0,0.05); cursor: not-allowed; border: 1px dashed var(--primary); color: var(--primary); font-weight: 700;">
+                                    <p style="font-size: 0.65rem; color: var(--secondary); margin-top: 4px;">Identificador único institucional generado por el sistema.</p>
+                                </div>
                             </div>
+                        <?php else: ?>
                             <div class="input-group">
-                                <label class="input-label">Código Estudiantil (Automático)</label>
-                                <input type="text" name="codigo_estudiantil" value="<?php echo htmlspecialchars($u['codigo_estudiantil'] ?? 'Generándose...'); ?>" class="input-field" readonly style="background: rgba(0,0,0,0.05); cursor: not-allowed; border: 1px dashed var(--primary); color: var(--primary); font-weight: 700;">
-                                <p style="font-size: 0.65rem; color: var(--secondary); margin-top: 4px;">Identificador único institucional generado por el sistema.</p>
+                                <label class="input-label">Código Docente (Automático)</label>
+                                <input type="text" value="<?php echo htmlspecialchars($u['codigo_profesor'] ?? 'Generándose...'); ?>" class="input-field" readonly style="background: rgba(0,0,0,0.05); cursor: not-allowed; border: 1px dashed var(--primary); color: var(--primary); font-weight: 700;">
+                                <p style="font-size: 0.65rem; color: var(--secondary); margin-top: 4px;">Identificador único del docente generado por el sistema.</p>
                             </div>
-                        </div>
+                        <?php endif; ?>
 
                         <div class="input-group">
                             <label class="input-label">Cambiar Contraseña</label>

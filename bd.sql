@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     programa_academico VARCHAR(100) DEFAULT NULL,
     semestre VARCHAR(20) DEFAULT NULL,
     codigo_estudiantil VARCHAR(50) DEFAULT NULL,
+    codigo_profesor VARCHAR(50) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
