@@ -541,3 +541,5 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
         width: 100% !important;
     }
 }
+.badge{display:inline-block;padding:4px 8px;border-radius:8px;font-size:0.78rem;line-height:1;font-weight:600;}
+

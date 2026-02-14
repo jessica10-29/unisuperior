@@ -126,9 +126,16 @@ if (!$hay_estudiantes && empty($mensaje)) {
         </aside>
 
         <main class="main-content">
-            <header style="margin-bottom: 30px;">
-                <h1 class="text-gradient">Gestión Académica</h1>
-                <p class="text-muted">Inscribe alumnos y califica tus cursos activos</p>
+            <header style="margin-bottom: 30px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                <div>
+                    <h1 class="text-gradient">Gestión Académica</h1>
+                    <p class="text-muted">Inscribe alumnos y califica tus cursos activos</p>
+                </div>
+                <?php if ($pendientes_total > 0): ?>
+                    <span class="badge" style="background: rgba(244,114,182,0.12); color:#ec4899; border:1px solid rgba(244,114,182,0.25); padding:8px 12px; border-radius: 999px; font-weight:700;">
+                        <?php echo $pendientes_total; ?> estudiante(s) nuevos sin asignar
+                    </span>
+                <?php endif; ?>
             </header>
 
             <?php echo $mensaje; ?>
