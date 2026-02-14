@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once 'conexion.php';
 verificar_sesion();
 verificar_rol('profesor');
@@ -6,24 +6,27 @@ verificar_rol('profesor');
 $profesor_id = $_SESSION['usuario_id'];
 $nombre_profesor = obtener_nombre_usuario();
 
-// Obtener estadísticas rápidas
 $sql_materias = "SELECT COUNT(*) as total FROM materias WHERE profesor_id = $profesor_id";
 $res_materias = $conn->query($sql_materias);
 $total_materias = $res_materias->fetch_assoc()['total'];
 
-// Calcular alumnos únicos de forma real (Trello integration)
 $sql_alumnos = "SELECT COUNT(DISTINCT estudiante_id) as total 
                 FROM matriculas m 
                 JOIN materias mat ON m.materia_id = mat.id 
                 WHERE mat.profesor_id = $profesor_id";
 $res_alumnos = $conn->query($sql_alumnos);
 $total_alumnos = ($res_alumnos) ? $res_alumnos->fetch_assoc()['total'] : 0;
+
 $estudiantes = $conn->query("
     SELECT u.id, u.nombre, u.email, u.programa_academico, u.semestre, u.foto,
-           COUNT(DISTINCT m.materia_id) AS cursos
+           COUNT(DISTINCT m.materia_id) AS cursos,
+           ROUND(AVG(m.promedio),2) AS promedio,
+           SUM(CASE WHEN a.estado IN ('Presente','Tardanza') THEN 1 ELSE 0 END) AS asistio,
+           COUNT(a.id) AS total_asist
     FROM usuarios u
     JOIN matriculas m ON u.id = m.estudiante_id
     JOIN materias mat ON m.materia_id = mat.id
+    LEFT JOIN asistencia a ON a.matricula_id = m.id
     WHERE mat.profesor_id = $profesor_id
     GROUP BY u.id, u.nombre, u.email, u.programa_academico, u.semestre, u.foto
     ORDER BY u.nombre ASC
@@ -52,7 +55,6 @@ $estudiantes = $conn->query("
     </div>
     <div class="mobile-overlay" id="mobile-overlay"></div>
     <div class="dashboard-grid">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo-area" style="margin-bottom: 40px; text-align: center;">
                 <i class="fa-solid fa-graduation-cap logo-icon" style="font-size: 2rem; color: var(--primary);"></i>
@@ -84,7 +86,6 @@ $estudiantes = $conn->query("
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
                 <div>
@@ -94,7 +95,6 @@ $estudiantes = $conn->query("
                 <div class="user-avatar" style="width: 40px; height: 40px; background: var(--primary); border-radius: 50%;"></div>
             </header>
 
-            <!-- Stats Grid -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px;">
                 <div class="card stat-card glass-panel">
                     <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
@@ -117,7 +117,6 @@ $estudiantes = $conn->query("
                 </div>
             </div>
 
-            <!-- Accesos Rápidos -->
             <h2 style="margin-bottom: 20px;">Acciones Rápidas</h2>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
                 <a href="gestion_notas.php" class="card glass-panel" style="text-decoration: none; color: inherit; text-align: center;">
@@ -139,13 +138,17 @@ $estudiantes = $conn->query("
                 </a>
             </div>
 
-            <!-- Estudiantes vinculados -->
             <div style="margin-top: 35px;">
                 <h2 style="margin-bottom: 15px;">Mis estudiantes</h2>
                 <?php if ($estudiantes && $estudiantes->num_rows > 0): ?>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
-                        <?php while ($e = $estudiantes->fetch_assoc()): ?>
-                            <?php $foto = obtener_foto_usuario($e['foto']); ?>
+                        <?php while ($e = $estudiantes->fetch_assoc()):
+                            $foto = obtener_foto_usuario($e['foto']);
+                            $prom = is_null($e['promedio']) ? '–' : number_format((float)$e['promedio'], 2);
+                            $totalAsist = (int)$e['total_asist'];
+                            $asistio = (int)$e['asistio'];
+                            $pctAsist = $totalAsist > 0 ? round(($asistio / $totalAsist) * 100) : 100;
+                        ?>
                             <div class="card glass-panel fade-in" style="display: flex; gap: 12px; align-items: center; padding: 14px;">
                                 <img src="<?php echo htmlspecialchars($foto); ?>" alt="avatar" style="width: 56px; height: 56px; border-radius: 12px; object-fit: cover; border: 1px solid rgba(255,255,255,0.08);">
                                 <div style="flex:1;">
@@ -159,6 +162,26 @@ $estudiantes = $conn->query("
                                             <span class="badge" style="background: rgba(16,185,129,0.12); color: #22c55e; border:1px solid rgba(16,185,129,0.25); padding:3px 8px; border-radius: 8px;">Sem <?php echo htmlspecialchars($e['semestre']); ?></span>
                                         <?php endif; ?>
                                         <span class="badge" style="background: rgba(251,191,36,0.12); color: #f59e0b; border:1px solid rgba(251,191,36,0.25); padding:3px 8px; border-radius: 8px;"><?php echo (int)$e['cursos']; ?> materias contigo</span>
+                                    </div>
+                                    <div style="margin-top:8px; display:grid; grid-template-columns: 1fr 1fr; gap:8px; font-size:0.78rem;">
+                                        <div style="background: rgba(99,102,241,0.07); border:1px solid rgba(99,102,241,0.15); border-radius:8px; padding:6px 8px;">
+                                            <div style="color: var(--primary); font-weight:700;">Promedio</div>
+                                            <div style="display:flex; align-items:center; gap:8px;">
+                                                <span style="font-weight:800; font-size:0.95rem;"><?php echo $prom; ?></span>
+                                                <?php if ($prom !== '–'): ?>
+                                                    <span class="badge" style="background: <?php echo ($prom>=3?'rgba(16,185,129,.12)':'rgba(244,63,94,.12)'); ?>; color: <?php echo ($prom>=3?'#22c55e':'#f87171'); ?>; border:1px solid rgba(255,255,255,0.08);">/5</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                        <div style="background: rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.12); border-radius:8px; padding:6px 8px;">
+                                            <div style="color: #10b981; font-weight:700;">Asistencia</div>
+                                            <div style="display:flex; align-items:center; gap:8px;">
+                                                <span style="font-weight:800; font-size:0.95rem;"><?php echo $pctAsist; ?>%</span>
+                                                <div style="flex:1; height:8px; background: rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
+                                                    <div style="width: <?php echo $pctAsist; ?>%; height:100%; background: linear-gradient(90deg, #22c55e, #10b981);"></div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -191,7 +214,6 @@ $estudiantes = $conn->query("
         btn.onclick = toggleMenu;
         overlay.onclick = toggleMenu;
     </script>
-    <!-- Botón Flotante para Certificado (FAB) -->
     <a href="generar_documento.php?tipo=estudio" target="_blank" class="fab-cert" title="Descargar Certificado de Estudio">
         <i class="fa-solid fa-file-pdf"></i>
     </a>
